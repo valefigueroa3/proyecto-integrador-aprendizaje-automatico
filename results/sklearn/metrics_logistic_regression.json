@@ -1,0 +1,23 @@
+{
+  "model": "logistic_regression",
+  "implementation": "LogisticRegression",
+  "best_params": {
+    "C": 0.9291538753149833
+  },
+  "best_cv_auc": 0.7098588735461707,
+  "accuracy": 0.8023503876429968,
+  "precision": 0.5492410218437616,
+  "recall": 0.0552390527256479,
+  "f1": 0.10038231214263965,
+  "roc_auc": 0.7098434329200913,
+  "average_precision": 0.3713440042408469,
+  "tn": 212915,
+  "fp": 2435,
+  "fn": 50745,
+  "tp": 2967,
+  "fit_cv_seconds": 18.72641190001741,
+  "predict_seconds": 0.04744210001081228,
+  "n_train": 1076248,
+  "n_test": 269062,
+  "random_state": 42
+}

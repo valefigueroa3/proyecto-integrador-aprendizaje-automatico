@@ -1,0 +1,8 @@
+﻿variable,n_categorias_aprendidas_train,categorias
+emp_length,12,1 year | 10+ years | 2 years | 3 years | 4 years | 5 years | 6 years | 7 years | 8 years | 9 years | < 1 year | Missing
+purpose,14,car | credit_card | debt_consolidation | educational | home_improvement | house | major_purchase | medical | moving | other | renewable_energy | small_business | vacation | wedding
+home_ownership,6,ANY | MORTGAGE | NONE | OTHER | OWN | RENT
+addr_state,51,AK | AL | AR | AZ | CA | CO | CT | DC | DE | FL | GA | HI | IA | ID | IL | IN | KS | KY | LA | MA | MD | ME | MI | MN | MO | MS | MT | NC | ND | NE | NH | NJ | NM | NV | NY | OH | OK | OR | PA | RI | SC | SD | TN | TX | UT | VA | VT | WA | WI | WV | WY
+verification_status,3,Not Verified | Source Verified | Verified
+grade,7,A | B | C | D | E | F | G
+term,2, 36 months |  60 months

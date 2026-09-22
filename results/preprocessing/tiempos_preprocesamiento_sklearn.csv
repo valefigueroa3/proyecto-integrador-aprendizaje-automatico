@@ -1,0 +1,2 @@
+﻿entorno,etapa,fit_transform_train_segundos,transform_test_segundos,n_train,n_test,n_features_salida
+scikit-learn,preprocesamiento,10.239882900379598,1.3139001997187734,1076248,269062,100

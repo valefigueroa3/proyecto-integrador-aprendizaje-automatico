@@ -1,0 +1,15 @@
+jupyterlab
+jupyter-book==1.0.4.post1
+numpy
+pandas
+pyarrow
+scipy
+scikit-learn
+matplotlib
+seaborn
+statsmodels
+missingno
+pyspark==3.5.7
+lime
+openpyxl
+jdk4py==17.0.7.0

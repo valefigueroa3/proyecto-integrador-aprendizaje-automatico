@@ -1,0 +1,13 @@
+﻿model,roc_auc,implementacion
+hist_gradient_boosting,0.7132369394849389,scikit-learn
+gradient_boosted_tree,0.7127425193910557,PySpark
+logistic_regression,0.7098758677707984,PySpark
+logistic_regression,0.7098434329200913,scikit-learn
+random_forest,0.7079635575773974,scikit-learn
+random_forest,0.7067503620596298,PySpark
+decision_tree,0.7039768234546792,scikit-learn
+gaussian_nb,0.666766878139438,scikit-learn
+linear_svc,0.6301459481828081,PySpark
+naive_bayes,0.525536601350518,PySpark
+decision_tree,0.4938986394445961,PySpark
+linear_svc,0.4758510045648267,scikit-learn

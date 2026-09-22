@@ -1,0 +1,10 @@
+[
+  {
+    "model": "linear_svc",
+    "fold_cv_auc": 0.6556755228405939
+  },
+  {
+    "model": "linear_svc",
+    "fold_cv_auc": 0.6599228843258369
+  }
+]

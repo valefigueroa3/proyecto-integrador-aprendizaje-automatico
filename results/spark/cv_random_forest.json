@@ -1,0 +1,10 @@
+[
+  {
+    "model": "random_forest",
+    "fold_cv_auc": 0.7033868997136983
+  },
+  {
+    "model": "random_forest",
+    "fold_cv_auc": 0.7058363263768004
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "n_test": 269062,
+  "accuracy": 0.8003731481963265,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "roc_auc": 0.6301459481828081,
+  "tn": 215350,
+  "fp": 0,
+  "fn": 53712,
+  "tp": 0,
+  "model": "linear_svc",
+  "fit_cv_seconds": 192.39923910005018,
+  "predict_seconds": 6.400611599907279
+}

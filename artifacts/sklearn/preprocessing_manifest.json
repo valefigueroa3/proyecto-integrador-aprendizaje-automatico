@@ -1,0 +1,13 @@
+{
+  "X_train_shape": [
+    1076248,
+    100
+  ],
+  "X_test_shape": [
+    269062,
+    100
+  ],
+  "y_train_rows": 1076248,
+  "y_test_rows": 269062,
+  "feature_count": 100
+}

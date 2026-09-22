@@ -1,0 +1,24 @@
+{
+  "model": "hist_gradient_boosting",
+  "implementation": "HistGradientBoostingClassifier",
+  "best_params": {
+    "max_depth": 5,
+    "max_iter": 50
+  },
+  "best_cv_auc": 0.7129093435099455,
+  "accuracy": 0.8028038147341505,
+  "precision": 0.5742506811989101,
+  "recall": 0.04708445040214477,
+  "f1": 0.08703283088994425,
+  "roc_auc": 0.7132369394849389,
+  "average_precision": 0.3779205651329436,
+  "tn": 213475,
+  "fp": 1875,
+  "fn": 51183,
+  "tp": 2529,
+  "fit_cv_seconds": 220.66808500001207,
+  "predict_seconds": 11.312672800384462,
+  "n_train": 1076248,
+  "n_test": 269062,
+  "random_state": 42
+}

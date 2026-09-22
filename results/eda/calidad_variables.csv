@@ -1,0 +1,17 @@
+﻿,tipo,n_no_nulos,n_nulos,pct_nulos,n_unicos
+emp_length,str,1266799,78511,5.8359039923883715,11
+dti,float64,1344936,374,0.027800283949424295,7067
+term,str,1345310,0,0.0,2
+id,object,1345310,0,0.0,1345310
+int_rate,float64,1345310,0,0.0,654
+grade,str,1345310,0,0.0,7
+home_ownership,str,1345310,0,0.0,6
+loan_amnt,float64,1345310,0,0.0,1556
+annual_inc,float64,1345310,0,0.0,64362
+verification_status,str,1345310,0,0.0,3
+loan_status,str,1345310,0,0.0,2
+issue_d,datetime64[us],1345310,0,0.0,139
+purpose,str,1345310,0,0.0,14
+addr_state,str,1345310,0,0.0,51
+fico_range_high,float64,1345310,0,0.0,40
+default,int8,1345310,0,0.0,2

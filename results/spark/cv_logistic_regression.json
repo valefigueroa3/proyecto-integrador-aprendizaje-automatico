@@ -1,0 +1,10 @@
+[
+  {
+    "model": "logistic_regression",
+    "fold_cv_auc": 0.7098356272172639
+  },
+  {
+    "model": "logistic_regression",
+    "fold_cv_auc": 0.7098336829723095
+  }
+]

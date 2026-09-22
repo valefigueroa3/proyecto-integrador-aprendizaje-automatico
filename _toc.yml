@@ -1,0 +1,11 @@
+format: jb-book
+root: intro
+chapters:
+  - file: notebooks/01_carga_y_auditoria
+  - file: notebooks/02_eda
+  - file: notebooks/03_particion_comun
+  - file: notebooks/04_preprocesamiento_sklearn
+  - file: notebooks/05_resultados_sklearn
+  - file: notebooks/06_modelado_spark
+  - file: notebooks/07_estadisticas_lime
+  - file: notebooks/08_conclusiones

@@ -1,0 +1,6 @@
+.venv/
+.uv-cache/
+_build/
+.ipynb_checkpoints/
+__pycache__/
+# El CSV original (1,7 GB) permanece fuera de este proyecto y no se versiona.

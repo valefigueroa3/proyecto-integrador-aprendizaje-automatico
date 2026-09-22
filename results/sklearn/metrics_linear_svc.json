@@ -1,0 +1,23 @@
+{
+  "model": "linear_svc",
+  "implementation": "LinearSVC",
+  "best_params": {
+    "C": 0.009291538753149831
+  },
+  "best_cv_auc": 0.49939879204454013,
+  "accuracy": 0.8003731481963265,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "roc_auc": 0.47585100456482676,
+  "average_precision": 0.1949466620386128,
+  "tn": 215350,
+  "fp": 0,
+  "fn": 53712,
+  "tp": 0,
+  "fit_cv_seconds": 894.1873381002806,
+  "predict_seconds": 0.2115001999773085,
+  "n_train": 1076248,
+  "n_test": 269062,
+  "random_state": 42
+}

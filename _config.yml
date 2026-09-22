@@ -1,0 +1,20 @@
+title: Proyecto integrador de aprendizaje automático
+author: Valentina Figueroa
+copyright: "2026"
+execute:
+  execute_notebooks: "off"
+only_build_toc_files: true
+sphinx:
+  recursive_update: true
+  config:
+    html_theme_options:
+      show_navbar_depth: 8
+      max_navbar_depth: 8
+      collapse_navbar: false
+exclude_patterns:
+  - .venv/**
+  - .uv-cache/**
+  - _build/**
+  - README.md
+  - requirements.txt
+  - run_notebook.py

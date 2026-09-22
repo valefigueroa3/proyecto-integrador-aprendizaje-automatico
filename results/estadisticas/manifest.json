@@ -1,0 +1,6 @@
+{
+  "bootstrap_replicates": 20,
+  "correction": "Holm",
+  "pairs": "best AUC model versus each alternative on the common test set",
+  "note": "Replicas multinomiales sobre todas las observaciones; se redujo el n\u00famero por coste computacional."
+}

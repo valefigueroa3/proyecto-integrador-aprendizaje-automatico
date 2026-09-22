@@ -1,0 +1,30 @@
+{
+  "source_file": "accepted_2007_to_2018Q4.csv",
+  "eligible_statuses": {
+    "Fully Paid": 0,
+    "Charged Off": 1
+  },
+  "random_state": 42,
+  "test_size": 0.2,
+  "rows_total": 1345310,
+  "rows_train": 1076248,
+  "rows_test": 269062,
+  "numeric_features": [
+    "loan_amnt",
+    "int_rate",
+    "fico_range_high",
+    "annual_inc",
+    "dti"
+  ],
+  "categorical_features": [
+    "emp_length",
+    "purpose",
+    "home_ownership",
+    "addr_state",
+    "verification_status",
+    "grade",
+    "term"
+  ],
+  "split_file": "common_split.parquet",
+  "model_base_file": "lending_club_model_base.parquet"
+}

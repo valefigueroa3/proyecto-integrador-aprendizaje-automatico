@@ -1,0 +1,10 @@
+[
+  {
+    "model": "naive_bayes",
+    "fold_cv_auc": 0.5237127671274595
+  },
+  {
+    "model": "naive_bayes",
+    "fold_cv_auc": 0.5237124534876693
+  }
+]

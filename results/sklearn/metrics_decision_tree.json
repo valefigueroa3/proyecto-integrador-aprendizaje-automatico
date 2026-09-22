@@ -1,0 +1,23 @@
+{
+  "model": "decision_tree",
+  "implementation": "DecisionTreeClassifier",
+  "best_params": {
+    "max_depth": 10
+  },
+  "best_cv_auc": 0.7028330697564084,
+  "accuracy": 0.8014881328467045,
+  "precision": 0.5220978196817914,
+  "recall": 0.06598153112898421,
+  "f1": 0.11715702479338842,
+  "roc_auc": 0.7039768234546792,
+  "average_precision": 0.3610990294468834,
+  "tn": 212106,
+  "fp": 3244,
+  "fn": 50168,
+  "tp": 3544,
+  "fit_cv_seconds": 571.605190299917,
+  "predict_seconds": 0.20601639989763498,
+  "n_train": 1076248,
+  "n_test": 269062,
+  "random_state": 42
+}

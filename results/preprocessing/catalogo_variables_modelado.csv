@@ -1,0 +1,13 @@
+﻿variable,tipo,momento
+loan_amnt,numérica,Disponible al originarse el préstamo
+int_rate,numérica,Disponible al originarse el préstamo
+fico_range_high,numérica,Disponible al originarse el préstamo
+annual_inc,numérica,Disponible al originarse el préstamo
+dti,numérica,Disponible al originarse el préstamo
+emp_length,categórica,Disponible al originarse el préstamo
+purpose,categórica,Disponible al originarse el préstamo
+home_ownership,categórica,Disponible al originarse el préstamo
+addr_state,categórica,Disponible al originarse el préstamo
+verification_status,categórica,Disponible al originarse el préstamo
+grade,categórica,Disponible al originarse el préstamo
+term,categórica,Disponible al originarse el préstamo

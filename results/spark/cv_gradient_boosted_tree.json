@@ -1,0 +1,10 @@
+[
+  {
+    "model": "gradient_boosted_tree",
+    "fold_cv_auc": 0.7095541903806122
+  },
+  {
+    "model": "gradient_boosted_tree",
+    "fold_cv_auc": 0.711952553060847
+  }
+]

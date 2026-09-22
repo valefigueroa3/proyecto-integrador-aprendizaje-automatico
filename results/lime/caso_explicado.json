@@ -1,0 +1,7 @@
+{
+  "id": "67849662",
+  "target": 1,
+  "model": "HistGradientBoostingClassifier",
+  "n_background": 5000,
+  "n_lime_samples": 800
+}

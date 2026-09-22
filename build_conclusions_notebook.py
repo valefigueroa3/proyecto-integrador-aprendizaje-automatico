@@ -1,0 +1,80 @@
+from pathlib import Path
+import json
+import nbformat as nbf
+
+cells = [
+    nbf.v4.new_markdown_cell("""# 8. Conclusiones y limitaciones
+
+## 8.1 Conclusiones
+
+La población de modelado quedó definida por los préstamos aceptados con resultado final conocido: `Fully Paid` y `Charged Off`. Se conservaron todas las observaciones de esa población y se empleó una partición estratificada única, de modo que las comparaciones entre modelos fueran pareadas y reproducibles.
+
+El mejor resultado de scikit-learn correspondió a `HistGradientBoostingClassifier`, con AUC ROC de 0,7132. En PySpark, el mejor resultado correspondió a `GBTClassifier`, con AUC ROC de 0,7127. La cercanía entre ambos resultados respalda la consistencia de la especificación de variables y de la partición común. La accuracy cercana a 0,80 debe interpretarse junto con el recall y el AUC-PR: con el umbral predeterminado, la detección de `Charged Off` sigue siendo limitada.
+
+Las pruebas de DeLong muestran que algunas diferencias son estadísticamente detectables debido al tamaño de la prueba, aunque una diferencia pequeña de AUC no implica necesariamente una mejora operativa relevante. McNemar permite complementar esa lectura observando cambios en las decisiones individuales. LIME aporta una explicación local para un caso concreto y no debe interpretarse como causalidad ni como importancia global.
+
+## 8.2 Limitaciones y trabajo futuro
+
+- La fuente disponible cubre 2007–2018 Q4; la guía menciona un horizonte más amplio. La ausencia de 2019–2020 queda como limitación de cobertura.
+- Las solicitudes rechazadas no tienen un resultado de pago comparable y por eso no entran en el target binario.
+- Por costo computacional se usaron grids reducidos, dos folds en PySpark, 10 árboles en Random Forest, 50 iteraciones en los modelos de boosting y 20 réplicas de bootstrap. Estas decisiones están registradas y deben aparecer en la entrega.
+- La partición principal es aleatoria. Una validación temporal y una calibración de probabilidades serían pasos recomendables antes de usar el modelo en operación.
+- La selección se hizo con AUC ROC. Para una decisión de crédito real se debería optimizar el umbral con costos explícitos de falsos negativos y falsos positivos.
+
+## 8.3 Reproducibilidad
+
+La semilla principal es 42. Los artefactos de la partición, preprocesamiento, modelos, predicciones, pruebas estadísticas y figuras quedan en las carpetas `data`, `artifacts`, `results` y `figures`. Los scripts `train_sklearn_models.py`, `run_spark_pipeline.py`, `run_statistical_tests.py` y `run_lime.py` permiten repetir cada etapa."""),
+    nbf.v4.new_markdown_cell("""## 9.10.5. Entregable: reflexión crítica solicitada
+
+### ¿Qué entorno fue más rápido y por qué?
+
+Al sumar los tiempos registrados para los seis modelos, PySpark empleó aproximadamente 1.748,5 segundos y scikit-learn 2.156,6 segundos. En esta ejecución local, PySpark fue aproximadamente 19 % más rápido en el conjunto total de modelos. La ventaja no fue uniforme: scikit-learn fue más rápido en regresión logística, Naive Bayes y HistGradientBoosting, mientras que PySpark fue más rápido en el árbol de decisión y LinearSVC. La diferencia agregada debe interpretarse con cuidado porque scikit-learn utilizó tres folds y PySpark dos folds, además de ejecutarse con `local[4]`, 16 particiones de shuffle y caché después de `VectorAssembler`. El caché evitó repetir la transformación común para cada estimador; `CrossValidator` y el ajuste de hiperparámetros aumentaron el costo en ambos entornos. Por tanto, el resultado describe esta configuración de hardware y no constituye un umbral universal de rendimiento.
+
+### ¿Cuál fue más preciso?
+
+Con AUC ROC, que fue el criterio común de selección, `HistGradientBoostingClassifier` de scikit-learn obtuvo el mejor resultado (0,7132), seguido muy de cerca por `GBTClassifier` de PySpark (0,7127). La diferencia entre ambos es de aproximadamente 0,0005 AUC. Si se observa accuracy con el umbral 0,5, GBT alcanza 0,8027 y HistGradientBoosting 0,8028; sin embargo, la clase `Charged Off` es minoritaria y el recall es bajo. Por ello, no se considera apropiado declarar un ganador únicamente por accuracy.
+
+### ¿Qué diferencias de AUC fueron estadísticamente significativas y cuáles son relevantes en la práctica?
+
+Después de la corrección de Holm, la prueba de DeLong detectó diferencias entre el mejor modelo y cada alternativa dentro de scikit-learn y PySpark. La comparación más cercana fue HistGradientBoosting frente a regresión logística (ΔAUC = 0,0034) y GBT frente a regresión logística (ΔAUC = 0,0029). En ambos casos la diferencia fue estadísticamente significativa con DeLong y el intervalo bootstrap no incluyó cero. McNemar confirmó la diferencia en scikit-learn (p ajustado = 0,0454), pero no en PySpark para GBT frente a regresión logística (p ajustado = 0,1724). Esto muestra que significación estadística y relevancia operativa no son equivalentes: una mejora de tres milésimas de AUC puede ser detectable con 269.062 observaciones, pero su valor práctico debe evaluarse con costos de error, calibración y umbrales. La comparación entre el mejor modelo de cada entorno no se sometió a una prueba de DeLong independiente en este flujo, por lo que no se afirma que la diferencia entre entornos sea significativa.
+
+### ¿Qué diferencias de implementación pueden explicar las discrepancias?
+
+Aunque se emplean nombres equivalentes, las implementaciones no son idénticas. Los árboles de PySpark realizan particiones sobre las variables vectorizadas y están sujetos a parámetros como `maxBins`, mientras que los árboles de scikit-learn usan otra implementación de búsqueda de umbrales. `LinearSVC` puede diferir en la función objetivo, la optimización y la interpretación de `regParam` frente al `C` de `LinearSVC` de scikit-learn. También cambian los valores por defecto, la regularización, la tolerancia, la representación dispersa de las variables one-hot y la cantidad de folds. Estas diferencias explican que modelos con el mismo nombre general no produzcan exactamente las mismas predicciones.
+
+### ¿Qué limitaciones tiene DeLong y cómo la complementan McNemar y bootstrap pareado?
+
+DeLong compara áreas bajo curvas ROC correlacionadas y responde si el ordenamiento de probabilidades difiere; no evalúa directamente un umbral concreto, costos de negocio, calibración ni dependencia temporal. McNemar usa las decisiones binarias sobre las mismas observaciones y permite comprobar si un modelo acierta donde el otro falla, pero depende del umbral. El bootstrap pareado estima la variabilidad de la diferencia de AUC y aporta un intervalo de confianza. Las tres pruebas coinciden para las diferencias amplias y para las comparaciones frente a modelos débiles. En las comparaciones cercanas, McNemar puede no rechazar aunque DeLong y bootstrap sí lo hagan. El bootstrap realizado aquí tiene 20 réplicas por costo computacional, por lo que sus valores p y límites deben considerarse aproximados.
+
+### ¿A partir de qué volumen de datos PySpark supera a scikit-learn?
+
+Con los experimentos realizados solo existe un punto de comparación: la población completa de 1.345.310 préstamos elegibles, con 269.062 observaciones en prueba. En ese punto y bajo la configuración local usada, el tiempo agregado de PySpark fue menor. No se hicieron corridas con varios tamaños de muestra, número de particiones ni cantidad de trabajadores; por ello no puede estimarse un volumen de cruce general. Para responderlo habría que repetir el mismo pipeline en varios tamaños y registrar el tiempo por etapa, la memoria y el número de ejecutores.
+
+### ¿Qué aporta LIME y cuáles son sus limitaciones en entornos distribuidos?
+
+LIME genera una explicación local: aproxima alrededor de un caso la relación entre las variables y la predicción, indicando qué variables empujan el resultado hacia `Charged Off` o `Fully Paid`. Ayuda a inspeccionar un caso individual y a comunicar el modelo. No es una explicación global ni causal, puede cambiar con el conjunto de referencia y el número de perturbaciones, y las variables one-hot dificultan la lectura directa. En un entorno distribuido tampoco se aplica automáticamente a todo el clúster; se debe seleccionar y materializar un caso o una muestra pequeña. En este trabajo se aplicó al mejor modelo de scikit-learn con un fondo de 5.000 filas y 800 perturbaciones, y sus resultados se interpretan como locales.
+
+### ¿Qué efecto tuvo cada condición obligatoria sobre el rendimiento?
+
+El uso de todas las filas elegibles aumentó el tiempo y la memoria, pero evitó que las métricas dependieran de una muestra. La partición 80/20 estratificada y común permitió comparaciones pareadas válidas. El preprocesamiento ajustado solo con train evitó fuga de información. El caché de Spark redujo recomputaciones de la transformación compartida. `ParamGridBuilder` y `CrossValidator` hicieron explícita la búsqueda de hiperparámetros, a cambio de varias sesiones de entrenamiento. La selección por AUC ROC permitió comparar modelos con escalas de probabilidad diferentes. DeLong, McNemar y bootstrap añadieron evidencia sobre la incertidumbre de las diferencias. Finalmente, LIME permitió revisar la explicación de un caso, aunque sin convertirla en una medida global de importancia."""),
+    nbf.v4.new_code_cell("""from pathlib import Path
+import json
+import pandas as pd
+
+PROJECT_DIR = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
+sk = pd.read_csv(PROJECT_DIR / 'results' / 'sklearn' / 'comparacion_metricas_sklearn.csv')
+sp = pd.DataFrame(json.loads((PROJECT_DIR / 'results' / 'spark' / 'comparacion_metricas_spark.json').read_text()))
+resumen = pd.concat([
+    sk[['model', 'roc_auc']].assign(implementacion='scikit-learn'),
+    sp[['model', 'roc_auc']].assign(implementacion='PySpark'),
+], ignore_index=True).sort_values('roc_auc', ascending=False)
+display(resumen)
+resumen.to_csv(PROJECT_DIR / 'results' / 'resumen_final_modelos.csv', index=False, encoding='utf-8-sig')"""),
+]
+
+nb = nbf.v4.new_notebook(cells=cells)
+nb['metadata'] = {'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'}}
+out = Path('notebooks/08_conclusiones.ipynb')
+out.parent.mkdir(parents=True, exist_ok=True)
+nbf.write(nb, out)
+print(f'Creado: {out}')

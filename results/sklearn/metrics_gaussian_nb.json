@@ -1,0 +1,21 @@
+{
+  "model": "gaussian_nb",
+  "implementation": "GaussianNB",
+  "best_params": {},
+  "best_cv_auc": null,
+  "accuracy": 0.669236086849871,
+  "precision": 0.3133319225478785,
+  "recall": 0.5513293118856122,
+  "f1": 0.3995763112088624,
+  "roc_auc": 0.666766878139438,
+  "average_precision": 0.31220514262607996,
+  "tn": 150453,
+  "fp": 64897,
+  "fn": 24099,
+  "tp": 29613,
+  "fit_cv_seconds": 2.586748699657619,
+  "predict_seconds": 1.3374006999656558,
+  "n_train": 1076248,
+  "n_test": 269062,
+  "random_state": 42
+}

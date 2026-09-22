@@ -1,0 +1,10 @@
+[
+  {
+    "model": "decision_tree",
+    "fold_cv_auc": 0.4885878056032309
+  },
+  {
+    "model": "decision_tree",
+    "fold_cv_auc": 0.48948282460012627
+  }
+]
