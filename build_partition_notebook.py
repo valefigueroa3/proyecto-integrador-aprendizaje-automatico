@@ -76,6 +76,9 @@ display(feature_catalog)
 feature_catalog.to_csv(RESULTS_DIR / 'catalogo_variables_modelado.csv', index=False, encoding='utf-8-sig')"""
 ))
 
+cells.append(nbf.v4.new_markdown_cell(
+"""El catálogo reúne cinco variables numéricas y siete categóricas, todas disponibles al originarse el préstamo. El identificador, el estado de pago y la fecha se conservan como metadatos para enlazar y describir registros, pero no se incluyen como predictores. Así se reduce el riesgo de que el modelo use información creada después del resultado que intenta anticipar."""))
+
 cells.append(nbf.v4.new_markdown_cell("## 3.2 Carga completa de la población elegible"))
 
 cells.append(nbf.v4.new_code_cell(
@@ -102,6 +105,9 @@ print(f'Filas: {len(model_base):,}')
 print(f'IDs únicos: {model_base.id.nunique():,}')
 display(model_base.head())"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""La carga conserva los 1.345.310 préstamos elegibles y confirma que existen 1.345.310 identificadores únicos. La comprobación descarta duplicados por `id` y verifica que estén presentes ambas clases. La tabla de cinco filas es solo una vista de ejemplo; el ajuste posterior usa la base completa."""))
 
 cells.append(nbf.v4.new_markdown_cell("## 3.3 Creación de la partición estratificada"))
 
@@ -135,6 +141,9 @@ split_summary['porcentaje_dentro_split'] = (
 display(split_summary)
 split_summary.to_csv(RESULTS_DIR / 'resumen_particion.csv', index=False, encoding='utf-8-sig')"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""La partición contiene 1.076.248 observaciones de entrenamiento y 269.062 de prueba. En ambos grupos, cerca de 80,04 % son préstamos pagados y 19,96 % castigados; esa cercanía confirma que la estratificación conservó la distribución del target. Ningún registro se comparte entre los dos grupos: el entrenamiento sirve para aprender y seleccionar modelos, y la prueba queda reservada para la evaluación final."""))
 
 cells.append(nbf.v4.new_markdown_cell("## 3.4 Persistencia y comprobación de reproducibilidad"))
 
@@ -177,6 +186,9 @@ print(f'Partición guardada: {split_path} ({split_path.stat().st_size / 1024**2:
 print(f'Base guardada: {base_path} ({base_path.stat().st_size / 1024**2:.2f} MiB)')
 display(split_check.head())"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""Los archivos Parquet guardan la asignación y la base reducida en formatos compactos (aproximadamente 7,88 MiB y 20,76 MiB). Después de escribirlos, se vuelven a abrir y se comprueban fila por fila, junto con el número de identificadores y los tamaños de cada partición. Esto verifica que los entornos posteriores usarán los mismos registros y que el artefacto persistido coincide con el objeto original."""))
 
 cells.append(nbf.v4.new_markdown_cell(
 """## 3.5 Uso obligatorio en ambos entornos

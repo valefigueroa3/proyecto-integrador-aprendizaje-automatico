@@ -84,6 +84,9 @@ df.info(memory_usage='deep')"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
+"""La selección reduce las 151 columnas originales a 16 campos para describir la población: las variables predictoras, el estado del préstamo, la fecha de originación, el identificador y el target derivado. El número de filas sigue siendo 1.345.310; aquí se reducen columnas irrelevantes para este análisis, no se toma una muestra de préstamos."""))
+
+cells.append(nbf.v4.new_markdown_cell(
 """## 2.2 Calidad, tipos y valores faltantes
 
 Se revisan tipos, cobertura, número de categorías y valores faltantes antes de definir el preprocesamiento. La tabla se calcula sobre todas las observaciones elegibles; por tanto, sirve para identificar problemas de calidad sin usar todavía información de la partición de prueba para ajustar parámetros."""))
@@ -111,6 +114,9 @@ plt.show()"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
+"""La tabla muestra que `emp_length` concentra 78.511 faltantes (5,84 %) y `dti` solo 374 (0,03 %); las demás variables analizadas están completas. Por su baja proporción, no se eliminan esas filas: el preprocesamiento posterior reemplaza faltantes numéricos por la mediana y conserva una categoría explícita para el empleo faltante. La línea del 30 % es una referencia para detectar problemas severos, no un umbral automático para borrar variables."""))
+
+cells.append(nbf.v4.new_markdown_cell(
 """## 2.3 Distribución de la variable objetivo
 
 La distribución de `default` determina el grado de desbalance y orienta la selección de métricas. Se reportan ambas clases antes de entrenar para evitar interpretar una accuracy alta como evidencia suficiente de capacidad predictiva."""))
@@ -136,7 +142,7 @@ plt.show()"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
-"""La clase de default es minoritaria, pero representa cerca de una quinta parte de la población. La partición deberá ser estratificada y la evaluación no debe depender solo de accuracy; se reportarán recall, F1, AUC ROC y AUC-PR."""
+"""La clase `Charged Off` representa 19,96 % de la población. Un clasificador que siempre predijera `Fully Paid` obtendría aproximadamente 80 % de accuracy y no detectaría ningún default; por eso esa métrica aislada sería engañosa. La partición se estratifica para conservar esta proporción y también se reportan recall, F1, AUC ROC y AUC-PR."""
 ))
 
 cells.append(nbf.v4.new_markdown_cell("## 2.4 Análisis unidimensional de variables numéricas"))
@@ -158,6 +164,9 @@ display(desc)
 desc.to_csv(RESULTS_DIR / 'resumen_numericas.csv', encoding='utf-8-sig')"""
 ))
 
+cells.append(nbf.v4.new_markdown_cell(
+"""La mediana del monto solicitado es 12.000 y la del interés es 12,74 %. El ingreso anual tiene una mediana de 65.000 y una media de 76.248, señal de que algunos ingresos altos estiran la distribución hacia la derecha; el máximo supera 10 millones. `dti` tiene mediana 17,61, pero también un máximo de 999 que debe tratarse como valor extremo o código especial y no como un registro típico. La regla de 1,5 rangos intercuartílicos identifica observaciones alejadas de la parte central; no demuestra que sean errores ni justifica eliminarlas por sí sola."""))
+
 cells.append(nbf.v4.new_code_cell(
 """fig, axes = plt.subplots(len(numeric_cols), 2, figsize=(14, 4 * len(numeric_cols)))
 for i, col in enumerate(numeric_cols):
@@ -172,7 +181,7 @@ plt.show()"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
-"""La asimetría y el porcentaje de outliers se revisan para decidir transformaciones. `annual_inc` presenta una cola derecha marcada. En la implementación final se conserva la especificación común de imputación por mediana y estandarización; no se aplica `log1p`, de modo que el efecto de la transformación no se mezcla con la comparación entre modelos."""
+"""Los histogramas y diagramas de caja confirman que `annual_inc` tiene una cola derecha larga y que varias variables contienen valores extremos. Los puntos alejados se muestran aquí para inspección; no se quitan de la base. En la comparación principal se conserva la transformación común de imputación por mediana y estandarización, sin aplicar `log1p`, para no mezclar el efecto de una transformación adicional con la comparación entre modelos."""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
@@ -206,6 +215,9 @@ plt.show()"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
+"""La cartera se concentra en consolidación de deuda (58,0 %) y tarjetas de crédito (21,9 %). El gráfico ordena las categorías por volumen, no por riesgo: una categoría frecuente no implica una mayor tasa de default. Los niveles con menos de 1 % se conservan en esta etapa; el codificador posterior puede representarlos individualmente y la interpretación de sus coeficientes debe tener en cuenta su menor soporte."""))
+
+cells.append(nbf.v4.new_markdown_cell(
 """## 2.6 Variables numéricas frente a default
 
 Se comparan las distribuciones de cada variable entre préstamos pagados y castigados. La prueba de Mann–Whitney se utiliza por la asimetría observada, mientras que la correlación punto-biserial resume la dirección y magnitud de la relación con la clase."""))
@@ -236,6 +248,9 @@ display(numeric_tests)
 numeric_tests.to_csv(RESULTS_DIR / 'pruebas_numericas_vs_default.csv', encoding='utf-8-sig')"""
 ))
 
+cells.append(nbf.v4.new_markdown_cell(
+"""En promedio, los préstamos castigados presentan mayor tasa de interés (15,71 % frente a 12,62 %), mayor DTI (20,17 frente a 17,81) y un FICO menor (691,9 frente a 702,3). El ingreso mediano es 60.000 frente a 65.000 y el monto mediano es 14.350 frente a 12.000. Las pruebas de Mann–Whitney detectan diferencias en la distribución, pero los p-valores impresos como 0,0000 significan que son menores que la precisión mostrada, no que la probabilidad sea exactamente cero. La correlación punto-biserial ayuda a dimensionar la asociación: es mayor para interés (r≈0,259), mientras que monto, ingreso y DTI tienen asociaciones más débiles. Son relaciones descriptivas, no efectos causales."""))
+
 cells.append(nbf.v4.new_code_cell(
 """fig, axes = plt.subplots(len(numeric_cols), 1, figsize=(12, 4 * len(numeric_cols)))
 for ax, col in zip(axes, numeric_cols):
@@ -246,6 +261,9 @@ fig.tight_layout()
 fig.savefig(FIGURES_DIR / 'boxplots_numericas_vs_default.png', dpi=150, bbox_inches='tight')
 plt.show()"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""Los diagramas comparan medianas y dispersión entre `Fully Paid` y `Charged Off`. Para hacer visible la parte central se ocultan los puntos extremos en estas figuras; esos registros continúan en los cálculos y en la base. La dirección de las diferencias visuales coincide con la tabla, aunque las distribuciones se traslapan: ninguna de estas variables separa por sí sola todos los préstamos pagados de los castigados."""))
 
 cells.append(nbf.v4.new_markdown_cell(
 """## 2.7 Variables categóricas frente a default
@@ -280,6 +298,9 @@ display(categorical_tests)
 categorical_tests.to_csv(RESULTS_DIR / 'chi2_categoricas_vs_default.csv', encoding='utf-8-sig')
 display(default_rate_tables['grade'])"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""Todas las variables categóricas muestran asociación estadística con `default` en esta población, pero la magnitud importa: V de Cramer es 0,046–0,092 para la mayoría, y aumenta a 0,176 para plazo y 0,262 para `grade`. La tasa por `grade` sube de 6,0 % en A a 49,9 % en G; por plazo, es 16,0 % a 36 meses y 32,4 % a 60 meses. Las diferencias hacen que estos campos sean informativos para el modelo, pero no significan que plazo o calificación causen el impago. Los p-valores presentados como 0,0000 están por debajo del redondeo de la tabla."""))
 
 cells.append(nbf.v4.new_code_cell(
 """fig, axes = plt.subplots(2, 2, figsize=(16, 12))
@@ -319,6 +340,9 @@ display(high_corr if not high_corr.empty else pd.DataFrame({'resultado': ['No se
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
+"""Ningún par de variables numéricas supera el umbral exploratorio `|r| > 0,7`, así que no se detecta redundancia lineal muy alta entre ellas. Respecto a `default`, la correlación más marcada es la positiva con interés (0,259) y la negativa con FICO (−0,131); siguen siendo asociaciones moderadas o débiles. La correlación de Pearson solo mide relaciones lineales y no descarta interacciones ni dependencias no lineales."""))
+
+cells.append(nbf.v4.new_markdown_cell(
 """## 2.9 Evolución temporal
 
 Se agrupan los préstamos por año de originación para observar cambios en volumen y tasa de default. Este análisis no modifica la partición aleatoria, pero advierte que una validación temporal adicional podría ser necesaria para medir estabilidad fuera del periodo observado."""))
@@ -345,6 +369,9 @@ fig.tight_layout()
 fig.savefig(FIGURES_DIR / 'evolucion_temporal.png', dpi=150, bbox_inches='tight')
 plt.show()"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""El volumen de préstamos crece con fuerza hasta 2015–2016 y luego disminuye en la parte disponible de 2018. La tasa observada llega a cerca de 23 % en 2016–2017 y baja en 2018; esa caída no debe interpretarse como una mejora definitiva, porque muchos préstamos recientes aún no han alcanzado un estado final y por ello quedaron fuera del análisis. Esta variación por cohorte respalda la recomendación de probar una partición temporal antes de usar el modelo para predecir préstamos futuros."""))
 
 cells.append(nbf.v4.new_markdown_cell(
 """## 2.10 Resumen ejecutivo y decisiones preliminares

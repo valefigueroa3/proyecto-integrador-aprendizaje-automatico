@@ -72,6 +72,9 @@ print(f'Test:  {X_test_raw.shape} | default: {y_test.mean():.4%}')"""
 ))
 
 cells.append(nbf.v4.new_markdown_cell(
+"""Las proporciones de `Charged Off` son prácticamente iguales en entrenamiento y prueba (19,9626 % y 19,9627 %). Por eso la evaluación no parte de una prueba artificialmente más sencilla o difícil. La división se toma de la columna `split` ya creada, de modo que los dos entornos conservan exactamente las mismas observaciones."""))
+
+cells.append(nbf.v4.new_markdown_cell(
 """## 4.2 Transformadores
 
 - Numéricas: imputación por mediana y estandarización.
@@ -125,6 +128,9 @@ print(f'Ajuste + transformación train: {fit_transform_seconds:.2f} s')
 print(f'Transformación test: {test_transform_seconds:.2f} s')"""
 ))
 
+cells.append(nbf.v4.new_markdown_cell(
+"""El preprocesamiento genera 100 columnas: cinco numéricas y 95 indicadores one-hot para las categorías. La matriz es dispersa: cada fila solo activa unas pocas categorías, por lo que guardar los ceros explícitamente desperdiciaría memoria. Se conservaron 1.076.248 filas de entrenamiento y 269.062 de prueba; el ajuste y la transformación de entrenamiento tomaron 10,24 segundos y aplicar las reglas ya aprendidas a prueba tomó 1,31 segundos."""))
+
 cells.append(nbf.v4.new_markdown_cell("## 4.3 Parámetros aprendidos únicamente de entrenamiento"))
 
 cells.append(nbf.v4.new_code_cell(
@@ -153,6 +159,9 @@ category_summary.to_csv(
     RESULTS_DIR / 'categorias_aprendidas_train.csv', index=False, encoding='utf-8-sig'
 )"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""La tabla numérica documenta los valores que aprendió el preprocesador solo con entrenamiento: por ejemplo, los faltantes de ingreso se reemplazan por 65.000, los de monto por 12.000 y los de DTI por 17,62. La media y la escala se usan para estandarizar las cinco variables. La tabla categórica confirma qué niveles conoce el codificador; una categoría nueva que aparezca en prueba no detiene el proceso y se representa sin activar indicadores aprendidos. Ninguno de esos parámetros se estima a partir de la prueba."""))
 
 cells.append(nbf.v4.new_markdown_cell("## 4.4 Persistencia de matrices y metadatos"))
 
@@ -191,6 +200,9 @@ display(timings)
 display(pd.DataFrame({'feature': feature_names}).head(30))
 print('Todos los artefactos fueron reabiertos y verificados.')"""
 ))
+
+cells.append(nbf.v4.new_markdown_cell(
+"""Las matrices, etiquetas, identificadores y nombres de variables se guardan por separado para conservar la correspondencia entre filas y predicciones. El preprocesador también se serializa para poder aplicar exactamente las mismas transformaciones en una ejecución futura. La lectura de vuelta verifica dimensiones, número de etiquetas y variables; el resultado confirma que los artefactos se escribieron íntegramente y están listos para el entrenamiento."""))
 
 cells.append(nbf.v4.new_markdown_cell(
 """## 4.5 Consideraciones para los modelos

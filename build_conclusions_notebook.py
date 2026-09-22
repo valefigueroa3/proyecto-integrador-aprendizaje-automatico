@@ -74,11 +74,13 @@ resumen = pd.concat([
 ], ignore_index=True).sort_values('roc_auc', ascending=False)
 display(resumen.round(4))
 resumen.to_csv(PROJECT_DIR / 'results' / 'resumen_final_modelos.csv', index=False, encoding='utf-8-sig')"""),
+    nbf.v4.new_markdown_cell("""La tabla ordena las ejecuciones por AUC ROC, pero no por recall ni por una prioridad operativa. HistGradientBoosting y GBT encabezan el ranking de sus entornos, aunque sus recall de 0,0471 y 0,0678 muestran que detectan una fracción pequeña de los defaults al umbral usado. GaussianNB tiene menor AUC, pero alcanza recall cercano a 0,55 en los dos entornos, a cambio de menor precisión y más falsas alarmas. Por eso no existe una elección única basada en una sola columna: primero debe definirse qué errores son más costosos."""),
     nbf.v4.new_code_cell("""tiempos = pd.DataFrame([
     {'entorno': 'scikit-learn', 'ajuste_y_prediccion_segundos': sk['fit_cv_seconds'].sum() + sk['predict_seconds'].sum()},
     {'entorno': 'PySpark', 'ajuste_y_prediccion_segundos': sp['fit_cv_seconds'].sum() + sp['predict_seconds'].sum()},
 ])
 display(tiempos.round(1))"""),
+    nbf.v4.new_markdown_cell("""La suma de los seis ajustes y predicciones fue de unos 1.748,5 segundos en PySpark y 2.156,6 segundos en scikit-learn; Spark tardó aproximadamente 18,9 % menos en esta ejecución. El dato no incluye lectura, preprocesamiento ni inicio del motor y la comparación usa grids y cantidades de folds distintos. Se interpreta como resultado de esta máquina y configuración, no como prueba de que Spark siempre sea más rápido ni como un volumen universal a partir del cual cambia la conveniencia."""),
 ]
 
 nb = nbf.v4.new_notebook(cells=cells)
