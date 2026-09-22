@@ -1,6 +1,6 @@
 {
-  "bootstrap_replicates": 20,
-  "correction": "Holm",
-  "pairs": "best AUC model versus each alternative on the common test set",
-  "note": "Replicas multinomiales sobre todas las observaciones; se redujo el n\u00famero por coste computacional."
+  "bootstrap_replicates": 100,
+  "correction": "Holm within each family of comparisons",
+  "pairs": "best AUC model versus alternatives within each environment, and six corresponding model families across environments on the common test set",
+  "note": "Bootstrap pareado multinomial sobre todas las observaciones. Los p-valores usan correcci\u00f3n de Monte Carlo; la resoluci\u00f3n es limitada por 100 r\u00e9plicas y se interpretan junto con el intervalo de confianza."
 }

@@ -1,16 +1,28 @@
 title: Proyecto integrador de aprendizaje automático
-author: Valentina Figueroa
-copyright: "2026"
+author: ""
+copyright: ""
 execute:
   execute_notebooks: "off"
 only_build_toc_files: true
 sphinx:
   recursive_update: true
   config:
+    author: ""
+    copyright: ""
+    html_show_copyright: false
+    html_show_sphinx: false
     html_theme_options:
       show_navbar_depth: 8
       max_navbar_depth: 8
       collapse_navbar: false
+      primary_sidebar_end:
+        - students-sidebar.html
+      repository_url: https://github.com/valefigueroa3/proyecto-integrador-aprendizaje-automatico
+      use_repository_button: true
+    templates_path:
+      - _templates
+    html_css_files:
+      - custom.css
 exclude_patterns:
   - .venv/**
   - .uv-cache/**

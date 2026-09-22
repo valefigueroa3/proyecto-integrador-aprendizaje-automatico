@@ -11,13 +11,13 @@ La población de modelado quedó definida por los préstamos aceptados con resul
 
 El mejor resultado de scikit-learn correspondió a `HistGradientBoostingClassifier`, con AUC ROC de 0,7132. En PySpark, el mejor resultado correspondió a `GBTClassifier`, con AUC ROC de 0,7127. La cercanía entre ambos resultados respalda la consistencia de la especificación de variables y de la partición común. La accuracy cercana a 0,80 debe interpretarse junto con el recall y el AUC-PR: con el umbral predeterminado, la detección de `Charged Off` sigue siendo limitada.
 
-Las pruebas de DeLong muestran que algunas diferencias son estadísticamente detectables debido al tamaño de la prueba, aunque una diferencia pequeña de AUC no implica necesariamente una mejora operativa relevante. McNemar permite complementar esa lectura observando cambios en las decisiones individuales. LIME aporta una explicación local para un caso concreto y no debe interpretarse como causalidad ni como importancia global.
+En la prueba común, los AUC más altos son similares: 0,7132 para HistGradientBoosting y 0,7127 para GBT de Spark. El rendimiento al detectar la clase minoritaria sigue siendo limitado con el umbral predeterminado, por lo que AUC y accuracy no bastan para decidir cuál modelo conviene en una aplicación real. Las pruebas pareadas ayudan a distinguir diferencias en la ordenación de los casos de cambios en las decisiones individuales.
 
 ## 8.2 Limitaciones y trabajo futuro
 
 - La fuente disponible cubre 2007–2018 Q4; la guía menciona un horizonte más amplio. La ausencia de 2019–2020 queda como limitación de cobertura.
 - Las solicitudes rechazadas no tienen un resultado de pago comparable y por eso no entran en el target binario.
-- Por costo computacional se usaron grids reducidos, dos folds en PySpark, 10 árboles en Random Forest, 50 iteraciones en los modelos de boosting y 20 réplicas de bootstrap. Estas decisiones están registradas y deben aparecer en la entrega.
+- Por costo computacional se usaron grids reducidos, dos folds en PySpark, 10 árboles en Random Forest, 50 iteraciones en los modelos de boosting y 100 réplicas de bootstrap. El número de réplicas limita la resolución de sus p-valores, por lo que las conclusiones bootstrap se interpretan con cautela.
 - La partición principal es aleatoria. Una validación temporal y una calibración de probabilidades serían pasos recomendables antes de usar el modelo en operación.
 - La selección se hizo con AUC ROC. Para una decisión de crédito real se debería optimizar el umbral con costos explícitos de falsos negativos y falsos positivos.
 
@@ -28,15 +28,17 @@ La semilla principal es 42. Los artefactos de la partición, preprocesamiento, m
 
 ### ¿Qué entorno fue más rápido y por qué?
 
-Al sumar los tiempos registrados para los seis modelos, PySpark empleó aproximadamente 1.748,5 segundos y scikit-learn 2.156,6 segundos. En esta ejecución local, PySpark fue aproximadamente 19 % más rápido en el conjunto total de modelos. La ventaja no fue uniforme: scikit-learn fue más rápido en regresión logística, Naive Bayes y HistGradientBoosting, mientras que PySpark fue más rápido en el árbol de decisión y LinearSVC. La diferencia agregada debe interpretarse con cuidado porque scikit-learn utilizó tres folds y PySpark dos folds, además de ejecutarse con `local[4]`, 16 particiones de shuffle y caché después de `VectorAssembler`. El caché evitó repetir la transformación común para cada estimador; `CrossValidator` y el ajuste de hiperparámetros aumentaron el costo en ambos entornos. Por tanto, el resultado describe esta configuración de hardware y no constituye un umbral universal de rendimiento.
+Al sumar el ajuste con validación cruzada y la predicción de prueba de los seis modelos, PySpark empleó aproximadamente 1.748,5 segundos y scikit-learn 2.156,6 segundos; el total de Spark fue cerca de 18,9 % menor. Estos tiempos no incluyen lectura de datos, preprocesamiento ni arranque de Spark. La ventaja no fue uniforme: scikit-learn fue más rápido en regresión logística, Naive Bayes y HistGradientBoosting, mientras PySpark fue más rápido en el árbol de decisión y LinearSVC. La comparación también está condicionada por tres folds en scikit-learn frente a dos en PySpark, grids diferentes, la ejecución local `local[4]`, 16 particiones de shuffle y el caché del vector después del preprocesamiento. El caché permitió reutilizar esa representación entre los modelos. El resultado describe esta configuración de hardware y no establece un umbral general de volumen.
 
 ### ¿Cuál fue más preciso?
 
-Con AUC ROC, que fue el criterio común de selección, `HistGradientBoostingClassifier` de scikit-learn obtuvo el mejor resultado (0,7132), seguido muy de cerca por `GBTClassifier` de PySpark (0,7127). La diferencia entre ambos es de aproximadamente 0,0005 AUC. Si se observa accuracy con el umbral 0,5, GBT alcanza 0,8027 y HistGradientBoosting 0,8028; sin embargo, la clase `Charged Off` es minoritaria y el recall es bajo. Por ello, no se considera apropiado declarar un ganador únicamente por accuracy.
+Si “más preciso” se refiere a la capacidad de ordenar correctamente positivos por encima de negativos, medida con AUC ROC, HistGradientBoosting obtuvo el mejor valor (0,7132), seguido por GBT de Spark (0,7127). DeLong pareado con corrección de Holm detectó esa diferencia entre entornos, aunque su magnitud es de solo 0,0005 AUC. En la clasificación al umbral predeterminado, la accuracy fue casi igual (0,8028 y 0,8027); GBT logró mayor recall para `Charged Off` (0,0678 frente a 0,0471) y mayor F1 (0,1207 frente a 0,0870), mientras HistGradientBoosting tuvo mayor precisión positiva (0,5743 frente a 0,5473). Por tanto, el modelo preferible depende de la métrica y del costo de los errores.
 
 ### ¿Qué diferencias de AUC fueron estadísticamente significativas y cuáles son relevantes en la práctica?
 
-Después de la corrección de Holm, la prueba de DeLong detectó diferencias entre el mejor modelo y cada alternativa dentro de scikit-learn y PySpark. La comparación más cercana fue HistGradientBoosting frente a regresión logística (ΔAUC = 0,0034) y GBT frente a regresión logística (ΔAUC = 0,0029). En ambos casos la diferencia fue estadísticamente significativa con DeLong y el intervalo bootstrap no incluyó cero. McNemar confirmó la diferencia en scikit-learn (p ajustado = 0,0454), pero no en PySpark para GBT frente a regresión logística (p ajustado = 0,1724). Esto muestra que significación estadística y relevancia operativa no son equivalentes: una mejora de tres milésimas de AUC puede ser detectable con 269.062 observaciones, pero su valor práctico debe evaluarse con costos de error, calibración y umbrales. La comparación entre el mejor modelo de cada entorno no se sometió a una prueba de DeLong independiente en este flujo, por lo que no se afirma que la diferencia entre entornos sea significativa.
+Después de la corrección de Holm, DeLong detectó diferencias entre el mejor modelo y cada alternativa dentro de ambos entornos. Las comparaciones más cercanas fueron HistGradientBoosting frente a regresión logística (ΔAUC = 0,0034) y GBT frente a regresión logística (ΔAUC = 0,0029). McNemar confirmó esas diferencias en scikit-learn (p ajustado = 0,0454), pero no en PySpark (p ajustado = 0,1724), porque compara decisiones al umbral predeterminado y no las puntuaciones continuas. Los intervalos bootstrap no ajustados del 95 % excluyeron cero para esas comparaciones; sus p-valores ajustados no alcanzaron 0,05 debido a la resolución limitada de 100 réplicas.
+
+También se compararon directamente las seis familias de modelos entre entornos sobre la prueba común. Tras Holm, DeLong encontró diferencias en árbol de decisión (ΔAUC = 0,2101), bosque aleatorio (0,0012), boosting (0,0005), SVM lineal (−0,1543) y Naive Bayes (0,1412); la diferencia de regresión logística (−0,00003) no fue significativa (p ajustado = 0,192). Los signos representan scikit-learn menos PySpark. McNemar solo encontró una diferencia de decisiones para Naive Bayes tras Holm; en los otros modelos, los errores a umbral predeterminado no cambiaron de manera estadísticamente detectable. En las comparaciones directas, ningún p-valor bootstrap sobrevivió Holm con 100 réplicas; por ejemplo, para boosting el intervalo no ajustado fue [0,00019; 0,00094], pero el p ajustado fue 0,119. Así, la diferencia de AUC entre los dos modelos de boosting es detectable con DeLong (p ajustado = 0,034), aunque su tamaño es muy pequeño y la evidencia bootstrap corregida no es concluyente. La relevancia práctica depende de recall, precisión, costos de error y estabilidad; accuracy por sí sola oculta el bajo recall de default.
 
 ### ¿Qué diferencias de implementación pueden explicar las discrepancias?
 
@@ -44,7 +46,7 @@ Aunque se emplean nombres equivalentes, las implementaciones no son idénticas. 
 
 ### ¿Qué limitaciones tiene DeLong y cómo la complementan McNemar y bootstrap pareado?
 
-DeLong compara áreas bajo curvas ROC correlacionadas y responde si el ordenamiento de probabilidades difiere; no evalúa directamente un umbral concreto, costos de negocio, calibración ni dependencia temporal. McNemar usa las decisiones binarias sobre las mismas observaciones y permite comprobar si un modelo acierta donde el otro falla, pero depende del umbral. El bootstrap pareado estima la variabilidad de la diferencia de AUC y aporta un intervalo de confianza. Las tres pruebas coinciden para las diferencias amplias y para las comparaciones frente a modelos débiles. En las comparaciones cercanas, McNemar puede no rechazar aunque DeLong y bootstrap sí lo hagan. El bootstrap realizado aquí tiene 20 réplicas por costo computacional, por lo que sus valores p y límites deben considerarse aproximados.
+DeLong compara áreas bajo curvas ROC correlacionadas y evalúa si difiere el ordenamiento de probabilidades; no evalúa directamente un umbral, costos de negocio, calibración ni dependencia temporal. McNemar compara aciertos y errores sobre las mismas filas, pero depende del umbral. El bootstrap pareado estima la variabilidad de ΔAUC mediante remuestreo de las mismas observaciones y entrega un intervalo de confianza. En este análisis, DeLong detectó varias diferencias que McNemar no detectó, como boosting frente a regresión logística en PySpark y la comparación de boosting entre entornos. Los intervalos bootstrap sin ajuste incluyeron cero solo para regresión logística entre entornos; no obstante, con 100 réplicas sus p-valores ajustados por Holm no alcanzaron significación. Las pruebas responden preguntas distintas y sus resultados no deben reducirse a un único veredicto.
 
 ### ¿A partir de qué volumen de datos PySpark supera a scikit-learn?
 
@@ -60,16 +62,23 @@ El uso de todas las filas elegibles aumentó el tiempo y la memoria, pero evitó
     nbf.v4.new_code_cell("""from pathlib import Path
 import json
 import pandas as pd
+import numpy as np
 
 PROJECT_DIR = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 sk = pd.read_csv(PROJECT_DIR / 'results' / 'sklearn' / 'comparacion_metricas_sklearn.csv')
 sp = pd.DataFrame(json.loads((PROJECT_DIR / 'results' / 'spark' / 'comparacion_metricas_spark.json').read_text()))
+metric_cols = ['roc_auc', 'accuracy', 'precision', 'recall', 'f1']
 resumen = pd.concat([
-    sk[['model', 'roc_auc']].assign(implementacion='scikit-learn'),
-    sp[['model', 'roc_auc']].assign(implementacion='PySpark'),
+    sk[['model', *metric_cols, 'average_precision']].assign(implementacion='scikit-learn'),
+    sp[['model', *metric_cols]].assign(average_precision=np.nan, implementacion='PySpark'),
 ], ignore_index=True).sort_values('roc_auc', ascending=False)
-display(resumen)
+display(resumen.round(4))
 resumen.to_csv(PROJECT_DIR / 'results' / 'resumen_final_modelos.csv', index=False, encoding='utf-8-sig')"""),
+    nbf.v4.new_code_cell("""tiempos = pd.DataFrame([
+    {'entorno': 'scikit-learn', 'ajuste_y_prediccion_segundos': sk['fit_cv_seconds'].sum() + sk['predict_seconds'].sum()},
+    {'entorno': 'PySpark', 'ajuste_y_prediccion_segundos': sp['fit_cv_seconds'].sum() + sp['predict_seconds'].sum()},
+])
+display(tiempos.round(1))"""),
 ]
 
 nb = nbf.v4.new_notebook(cells=cells)

@@ -69,7 +69,8 @@ def delong_paired(y, s1, s2):
     delta = float(aucs[0] - aucs[1])
     var = float(cov[0, 0] + cov[1, 1] - 2 * cov[0, 1])
     z = delta / np.sqrt(max(var, 1e-15))
-    return {"auc_1": float(aucs[0]), "auc_2": float(aucs[1]), "delta_auc": delta, "z": float(z), "p_value": float(2 * norm.sf(abs(z)))}
+    p_value = max(float(2 * norm.sf(abs(z))), float(np.finfo(float).tiny))
+    return {"auc_1": float(aucs[0]), "auc_2": float(aucs[1]), "delta_auc": delta, "z": float(z), "p_value": p_value}
 
 
 def mcnemar(y, p1, p2):
@@ -81,7 +82,7 @@ def mcnemar(y, p1, p2):
     return {"b_model_1_correct_model_2_wrong": b, "c_model_1_wrong_model_2_correct": c, "p_value": p}
 
 
-def bootstrap_auc_difference(y, s1, s2, n_boot=20, seed=42):
+def bootstrap_auc_difference(y, s1, s2, n_boot=100, seed=42):
     y = np.asarray(y, dtype=int)
     s1, s2 = np.asarray(s1), np.asarray(s2)
     rng = np.random.default_rng(seed)
@@ -117,12 +118,15 @@ def bootstrap_auc_difference(y, s1, s2, n_boot=20, seed=42):
             deltas.append(a1 - a2)
     deltas = np.asarray(deltas)
     observed = roc_auc_score(y, s1) - roc_auc_score(y, s2)
+    tail_count = min(int(np.sum(deltas <= 0)), int(np.sum(deltas >= 0)))
+    # Corrección Monte Carlo para que el p-valor no se reporte como cero.
+    bootstrap_p = min(1.0, 2.0 * (tail_count + 1) / (len(deltas) + 1))
     return {
         "observed_delta_auc": float(observed),
         "bootstrap_replicates": int(len(deltas)),
         "ci95_low": float(np.quantile(deltas, 0.025)),
         "ci95_high": float(np.quantile(deltas, 0.975)),
-        "p_value_two_sided": float(2 * min(np.mean(deltas <= 0), np.mean(deltas >= 0))),
+        "p_value_two_sided": float(bootstrap_p),
     }
 
 
@@ -171,6 +175,47 @@ def compare(name, pred, reference):
     result.to_csv(OUT / f"comparaciones_{name}.csv", index=False, encoding="utf-8-sig")
 
 
+def compare_environments(sk, sp):
+    """Compara implementaciones análogas sobre las mismas filas de prueba."""
+    model_pairs = [
+        ("logistic_regression", "logistic_regression", "Regresión logística"),
+        ("decision_tree", "decision_tree", "Árbol de decisión"),
+        ("random_forest", "random_forest", "Bosque aleatorio"),
+        ("hist_gradient_boosting", "gradient_boosted_tree", "Boosting"),
+        ("linear_svc", "linear_svc", "SVM lineal"),
+        ("gaussian_nb", "naive_bayes", "Naive Bayes gaussiano"),
+    ]
+    rows = []
+    for sk_name, sp_name, family in model_pairs:
+        if sk_name not in sk or sp_name not in sp:
+            continue
+        left, right = sk[sk_name], sp[sp_name]
+        if not np.array_equal(left["id"].to_numpy(), right["id"].to_numpy()):
+            raise ValueError(f"Las predicciones no están alineadas por id: {family}")
+        y = left["default"].to_numpy()
+        if not np.array_equal(y, right["default"].to_numpy()):
+            raise ValueError(f"Las etiquetas no coinciden entre entornos: {family}")
+        d = delong_paired(y, left["score"], right["score"])
+        m = mcnemar(y, left["prediction"], right["prediction"])
+        boot = bootstrap_auc_difference(y, left["score"], right["score"])
+        rows.append({
+            "familia_modelo": family,
+            "modelo_sklearn": sk_name,
+            "modelo_pyspark": sp_name,
+            **{f"delong_{k}": v for k, v in d.items()},
+            **{f"mcnemar_{k}": v for k, v in m.items()},
+            **{f"bootstrap_{k}": v for k, v in boot.items()},
+        })
+    result = pd.DataFrame(rows)
+    for family, col in [
+        ("delong", "delong_p_value"),
+        ("mcnemar", "mcnemar_p_value"),
+        ("bootstrap", "bootstrap_p_value_two_sided"),
+    ]:
+        result[f"{family}_holm_p_value"] = holm(result[col].to_numpy())
+    result.to_csv(OUT / "comparaciones_entornos.csv", index=False, encoding="utf-8-sig")
+
+
 def main():
     sk_models = ["decision_tree", "gaussian_nb", "hist_gradient_boosting", "linear_svc", "logistic_regression", "random_forest"]
     sp_models = ["decision_tree", "gradient_boosted_tree", "linear_svc", "logistic_regression", "naive_bayes", "random_forest"]
@@ -179,7 +224,8 @@ def main():
     sp = load_predictions(SP, sp_models, suffix="predictions_")
     compare("sklearn", sk, "hist_gradient_boosting")
     compare("spark", sp, "gradient_boosted_tree")
-    (OUT / "manifest.json").write_text(json.dumps({"bootstrap_replicates": 20, "correction": "Holm", "pairs": "best AUC model versus each alternative on the common test set", "note": "Replicas multinomiales sobre todas las observaciones; se redujo el número por coste computacional."}, indent=2), encoding="utf-8")
+    compare_environments(sk, sp)
+    (OUT / "manifest.json").write_text(json.dumps({"bootstrap_replicates": 100, "correction": "Holm within each family of comparisons", "pairs": "best AUC model versus alternatives within each environment, and six corresponding model families across environments on the common test set", "note": "Bootstrap pareado multinomial sobre todas las observaciones. Los p-valores usan corrección de Monte Carlo; la resolución es limitada por 100 réplicas y se interpretan junto con el intervalo de confianza."}, indent=2), encoding="utf-8")
     print({"sklearn_models": list(sk), "spark_models": list(sp)})
 
 
